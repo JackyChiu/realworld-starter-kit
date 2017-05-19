@@ -24,8 +24,23 @@ type UserJSON struct {
 func (h *Handler) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	router := NewRouter(h.Logger)
 
-	router.AddRoute(`users/?`, http.MethodPost, h.registerUser)
-	router.AddRoute(`users/login/?`, http.MethodPost, h.loginUser)
+	router.AddRoute(
+		`users/?`,
+		http.MethodPost,
+		h.registerUser,
+	)
+
+	router.AddRoute(
+		`users/login/?`,
+		http.MethodPost,
+		h.loginUser,
+	)
+
+	router.AddRoute(
+		`users/?`,
+		http.MethodGet,
+		h.getCurrentUser(h.currentUser),
+	)
 
 	router.ServeHTTP(w, r)
 }
@@ -61,7 +76,7 @@ func (h *Handler) registerUser(w http.ResponseWriter, r *http.Request) {
 			Password string `json:"password"`
 		} `json:"user"`
 	}{}
-	u := &body.User
+	bodyUser := &body.User
 
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -69,14 +84,14 @@ func (h *Handler) registerUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	m, err := models.NewUser(u.Email, u.Username, u.Password)
+	u, err := models.NewUser(bodyUser.Email, bodyUser.Username, bodyUser.Password)
 	if err != nil {
 		// TODO: Error JSON
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
-	err = h.DB.CreateUser(m)
+	err = h.DB.CreateUser(u)
 	if err != nil {
 		// TODO: Error JSON
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
@@ -85,13 +100,15 @@ func (h *Handler) registerUser(w http.ResponseWriter, r *http.Request) {
 
 	res := &UserJSON{
 		&User{
-			Username: m.Username,
-			Email:    m.Email,
-			Token:    h.JWT.NewToken(m.Username),
+			Username: u.Username,
+			Email:    u.Email,
+			Token:    h.JWT.NewToken(u.Username),
 		},
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
 }
+
 func (h *Handler) loginUser(w http.ResponseWriter, r *http.Request) {
 	body := struct {
 		User struct {
@@ -99,7 +116,7 @@ func (h *Handler) loginUser(w http.ResponseWriter, r *http.Request) {
 			Password string `json:"password"`
 		} `json:"user"`
 	}{}
-	u := &body.User
+	bodyUser := &body.User
 
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -108,14 +125,14 @@ func (h *Handler) loginUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	m, err := h.DB.FindUserByEmail(u.Email)
+	u, err := h.DB.FindUserByEmail(bodyUser.Email)
 	if err != nil {
 		// TODO: Error JSON
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
-	match := m.MatchPassword(u.Password)
+	match := u.MatchPassword(bodyUser.Password)
 	if !match {
 		// TODO: Error JSON
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
@@ -124,12 +141,32 @@ func (h *Handler) loginUser(w http.ResponseWriter, r *http.Request) {
 
 	res := &UserJSON{
 		&User{
-			Username: m.Username,
-			Email:    m.Email,
-			Token:    h.JWT.NewToken(m.Username),
-			Bio:      m.Bio,
-			Image:    m.Image,
+			Username: u.Username,
+			Email:    u.Email,
+			Token:    h.JWT.NewToken(u.Username),
+			Bio:      u.Bio,
+			Image:    u.Image,
 		},
 	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
+}
+
+func (h *Handler) currentUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	u := ctx.Value(currentUserKey).(*models.User)
+
+	res := &UserJSON{
+		&User{
+			Username: u.Username,
+			Email:    u.Email,
+			Token:    h.JWT.NewToken(u.Username),
+			Bio:      u.Bio,
+			Image:    u.Image,
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
 }
