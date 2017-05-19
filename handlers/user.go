@@ -19,7 +19,17 @@ type UserJSON struct {
 	User *User `json:"user"`
 }
 
-func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UsersHandler(w http.ResponseWriter, r *http.Request) {
+	router := NewRouter(h.Logger)
+
+	router.AddRoute(`users/?`, http.MethodPost, h.registerUser)
+	router.AddRoute(`users/login/?`, http.MethodPost, h.loginUser)
+
+	router.DebugMode(true)
+	router.ServeHTTP(w, r)
+}
+
+func (h *Handler) registerUser(w http.ResponseWriter, r *http.Request) {
 	body := struct {
 		User struct {
 			Username string `json:"username"`
@@ -62,7 +72,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(res)
 }
-func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) loginUser(w http.ResponseWriter, r *http.Request) {
 	body := struct {
 		User struct {
 			Email    string `json:"email"`

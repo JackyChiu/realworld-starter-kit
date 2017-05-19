@@ -30,7 +30,7 @@ func main() {
 	h := handlers.New(db, j, logger)
 
 	http.HandleFunc("/api/users", h.UsersHandler)
-	http.HandleFunc("/api/users/login", h.LoginHandler)
+	http.HandleFunc("/api/users/", h.UsersHandler)
 	http.HandleFunc("/api/articles", h.ArticlesHandler)
 	http.HandleFunc("/api/articles/", h.ArticlesHandler)
 

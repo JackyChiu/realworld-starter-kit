@@ -105,7 +105,7 @@ func (h *Handler) getCurrentUser(next http.HandlerFunc) http.HandlerFunc {
 		ctx = context.WithValue(ctx, CurrentUser, u)
 
 		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
+		next(w, r)
 	}
 }
 

@@ -52,7 +52,7 @@ func NewRouter(logger *log.Logger) *Router {
 // To handle /blog/:id
 // r.AddRoute(`\/blog\/(?P<id>[0-9]+$`, h)
 // The id will be availabl in the http.Request Context passed to your handler
-func (r *Router) AddRoute(pattern string, method string, handler http.Handler) {
+func (r *Router) AddRoute(pattern string, method string, handler http.HandlerFunc) {
 	var found = false
 	for _, route := range r.routes {
 		if route.Pattern == pattern {
