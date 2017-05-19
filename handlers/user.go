@@ -9,6 +9,7 @@ import (
 	"github.com/JackyChiu/realworld-starter-kit/models"
 )
 
+// User is the user json object for responses
 type User struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
@@ -17,10 +18,12 @@ type User struct {
 	Image    string `json:"image"`
 }
 
+// UserJSON is the wrapper around User to give it a key "user"
 type UserJSON struct {
 	User *User `json:"user"`
 }
 
+// UserHandler handles the user routes
 func (h *Handler) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	router := NewRouter(h.Logger)
 
@@ -45,6 +48,7 @@ func (h *Handler) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	router.ServeHTTP(w, r)
 }
 
+// getCurrentUser is a middleware that extracts the current user into context
 func (h *Handler) getCurrentUser(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
@@ -68,6 +72,8 @@ func (h *Handler) getCurrentUser(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// POST /user
+// regiesterUser adds a new user to the database and response with the new user
 func (h *Handler) registerUser(w http.ResponseWriter, r *http.Request) {
 	body := struct {
 		User struct {
@@ -109,6 +115,8 @@ func (h *Handler) registerUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
+// POST /user/login
+// loginUser returns an user according to the credentials provided
 func (h *Handler) loginUser(w http.ResponseWriter, r *http.Request) {
 	body := struct {
 		User struct {
@@ -152,6 +160,8 @@ func (h *Handler) loginUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
+// GET /user
+// currentUser responds with the current user
 func (h *Handler) currentUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -161,9 +171,10 @@ func (h *Handler) currentUser(w http.ResponseWriter, r *http.Request) {
 		&User{
 			Username: u.Username,
 			Email:    u.Email,
-			Token:    h.JWT.NewToken(u.Username),
-			Bio:      u.Bio,
-			Image:    u.Image,
+			// TODO: Use same token that was provided?
+			Token: h.JWT.NewToken(u.Username),
+			Bio:   u.Bio,
+			Image: u.Image,
 		},
 	}
 
