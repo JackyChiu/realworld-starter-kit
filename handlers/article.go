@@ -46,32 +46,46 @@ func (h *Handler) ArticlesHandler(w http.ResponseWriter, r *http.Request) {
 	// Unprotected routes
 	router.AddRoute(
 		`articles\/?$`,
-		"GET", h.getCurrentUser(h.getArticles))
+		http.MethodGet,
+		h.getCurrentUser(h.getArticles),
+	)
 
 	router.AddRoute(
 		`articles\/(?P<slug>[0-9a-zA-Z\-]+)$`,
-		"GET", h.getCurrentUser(h.extractArticle(h.getArticle)))
+		http.MethodGet,
+		h.getCurrentUser(h.extractArticle(h.getArticle)),
+	)
 
 	// Protected routes
 	router.AddRoute(
 		`articles\/?$`,
-		"POST", h.getCurrentUser(h.authorize(h.createArticle)))
+		http.MethodPost,
+		h.getCurrentUser(h.authorize(h.createArticle)),
+	)
 
 	router.AddRoute(
 		`articles\/(?P<slug>[0-9a-zA-Z\-]+)$`,
-		"PUT", h.getCurrentUser(h.authorize(h.extractArticle(h.updateArticle))))
+		http.MethodPut,
+		h.getCurrentUser(h.authorize(h.extractArticle(h.updateArticle))),
+	)
 
 	router.AddRoute(
 		`articles\/(?P<slug>[0-9a-zA-Z\-]+)$`,
-		"DELETE", h.getCurrentUser(h.authorize(h.extractArticle(h.deleteArticle))))
+		http.MethodDelete,
+		h.getCurrentUser(h.authorize(h.extractArticle(h.deleteArticle))),
+	)
 
 	router.AddRoute(
 		`articles\/(?P<slug>[0-9a-zA-Z\-]+)\/favorite$`,
-		"POST", h.getCurrentUser(h.authorize(h.extractArticle(h.favoriteArticle))))
+		http.MethodPost,
+		h.getCurrentUser(h.authorize(h.extractArticle(h.favoriteArticle))),
+	)
 
 	router.AddRoute(
 		`articles\/(?P<slug>[0-9a-zA-Z\-]+)\/favorite$`,
-		"DELETE", h.getCurrentUser(h.authorize(h.extractArticle(h.unFavoriteArticle))))
+		http.MethodDelete,
+		h.getCurrentUser(h.authorize(h.extractArticle(h.unFavoriteArticle))),
+	)
 
 	router.ServeHTTP(w, r)
 }
