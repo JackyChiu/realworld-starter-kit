@@ -22,14 +22,13 @@ type Router struct {
 	debug  bool
 }
 
-type contextKey string
-
-func (c contextKey) String() string {
-	return string(c)
-}
+const (
+	currentUserKey    = "current_user"
+	fetchedArticleKey = "article"
+	claimKey          = "claim"
+)
 
 func NewRouter(logger *log.Logger) *Router {
-	logger.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
 	if err != nil {
 		debug = false
@@ -70,11 +69,6 @@ func (r *Router) AddRoute(pattern string, method string, handler http.HandlerFun
 			},
 		})
 	}
-}
-
-// DebugMode enable debug, print some information about the handled request
-func (r *Router) DebugMode(enabled bool) {
-	r.debug = enabled
 }
 
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {

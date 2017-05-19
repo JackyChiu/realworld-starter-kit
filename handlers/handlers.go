@@ -15,17 +15,21 @@ type Handler struct {
 	Logger *log.Logger
 }
 
+type errorResponse struct {
+	Errors map[string]interface{} `json:"errors"`
+}
+
 func New(db *models.DB, jwt *auth.JWT, logger *log.Logger) *Handler {
 	return &Handler{db, jwt, logger}
 }
 
 func (h *Handler) authorize(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if claim := r.Context().Value(Claim); claim != nil {
-			if currentUser := r.Context().Value(CurrentUser).(*models.User); (currentUser == &models.User{}) {
+		if claim := r.Context().Value(claimKey); claim != nil {
+			if currentUser := r.Context().Value(currentUserKey).(*models.User); (currentUser == &models.User{}) {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			} else {
-				next.ServeHTTP(w, r)
+				next(w, r)
 			}
 		} else {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)

@@ -30,10 +30,6 @@ type Author struct {
 	Following bool   `json:"following"`
 }
 
-type errorResponse struct {
-	Errors map[string]interface{} `json:"errors"`
-}
-
 type ArticleJSON struct {
 	Article `json:"article"`
 }
@@ -42,12 +38,6 @@ type ArticlesJSON struct {
 	Articles      []Article `json:"articles"`
 	ArticlesCount int       `json:"articlesCount"`
 }
-
-const (
-	CurrentUser    = contextKey("current_user")
-	FetchedArticle = contextKey("article")
-	Claim          = contextKey("claim")
-)
 
 // ArticlesHandler handle /api/articles
 func (h *Handler) ArticlesHandler(w http.ResponseWriter, r *http.Request) {
@@ -99,19 +89,19 @@ func (h *Handler) extractArticle(next http.HandlerFunc) http.HandlerFunc {
 
 			if a != nil {
 				ctx := r.Context()
-				ctx = context.WithValue(ctx, FetchedArticle, a)
+				ctx = context.WithValue(ctx, fetchedArticleKey, a)
 				r = r.WithContext(ctx)
 			}
 		}
-		next.ServeHTTP(w, r)
+		next(w, r)
 	}
 }
 
 func (h *Handler) getArticle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	a := ctx.Value(FetchedArticle).(*models.Article)
-	u := ctx.Value(CurrentUser).(*models.User)
+	a := ctx.Value(fetchedArticleKey).(*models.Article)
+	u := ctx.Value(currentUserKey).(*models.User)
 
 	articleJSON := ArticleJSON{
 		Article: h.buildArticleJSON(a, u),
@@ -150,7 +140,7 @@ func (h *Handler) getArticles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var u = r.Context().Value(CurrentUser).(*models.User)
+	var u = r.Context().Value(currentUserKey).(*models.User)
 
 	var articlesJSON ArticlesJSON
 	for i := range articles {
@@ -181,7 +171,7 @@ func (h *Handler) createArticle(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	u := r.Context().Value(CurrentUser).(*models.User)
+	u := r.Context().Value(currentUserKey).(*models.User)
 
 	a := models.NewArticle(body.Article.Title, body.Article.Description, body.Article.Body, u)
 
@@ -215,8 +205,8 @@ func (h *Handler) createArticle(w http.ResponseWriter, r *http.Request) {
 // updateArticle handle PUT /api/articles/:slug
 func (h *Handler) updateArticle(w http.ResponseWriter, r *http.Request) {
 	var err error
-	a := r.Context().Value(FetchedArticle).(*models.Article)
-	u := r.Context().Value(CurrentUser).(*models.User)
+	a := r.Context().Value(fetchedArticleKey).(*models.Article)
+	u := r.Context().Value(currentUserKey).(*models.User)
 
 	if !a.IsOwnedBy(u.Username) {
 		err = fmt.Errorf("You don't have the permission to edit this article")
@@ -280,8 +270,8 @@ func (h *Handler) updateArticle(w http.ResponseWriter, r *http.Request) {
 // deleteArticle handle DELETE /api/articles/:slug
 func (h *Handler) deleteArticle(w http.ResponseWriter, r *http.Request) {
 	var err error
-	a := r.Context().Value(FetchedArticle).(*models.Article)
-	u := r.Context().Value(CurrentUser).(*models.User)
+	a := r.Context().Value(fetchedArticleKey).(*models.Article)
+	u := r.Context().Value(currentUserKey).(*models.User)
 
 	if !a.IsOwnedBy(u.Username) {
 		err = fmt.Errorf("You don't have the permission to delete this article")
@@ -301,8 +291,8 @@ func (h *Handler) deleteArticle(w http.ResponseWriter, r *http.Request) {
 
 // favoriteArticle handle POST /api/articles/:slug/favorite
 func (h *Handler) favoriteArticle(w http.ResponseWriter, r *http.Request) {
-	a := r.Context().Value(FetchedArticle).(*models.Article)
-	u := r.Context().Value(CurrentUser).(*models.User)
+	a := r.Context().Value(fetchedArticleKey).(*models.Article)
+	u := r.Context().Value(currentUserKey).(*models.User)
 
 	err := h.DB.FavoriteArticle(u, a)
 
@@ -323,8 +313,8 @@ func (h *Handler) favoriteArticle(w http.ResponseWriter, r *http.Request) {
 
 // unFavoriteArticle handle DELETE /api/articles/:slug/favorite
 func (h *Handler) unFavoriteArticle(w http.ResponseWriter, r *http.Request) {
-	a := r.Context().Value(FetchedArticle).(*models.Article)
-	u := r.Context().Value(CurrentUser).(*models.User)
+	a := r.Context().Value(fetchedArticleKey).(*models.Article)
+	u := r.Context().Value(currentUserKey).(*models.User)
 
 	err := h.DB.UnfavoriteArticle(u, a)
 

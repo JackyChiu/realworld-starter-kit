@@ -27,7 +27,6 @@ func (h *Handler) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	router.AddRoute(`users/?`, http.MethodPost, h.registerUser)
 	router.AddRoute(`users/login/?`, http.MethodPost, h.loginUser)
 
-	router.DebugMode(true)
 	router.ServeHTTP(w, r)
 }
 
@@ -44,10 +43,10 @@ func (h *Handler) getCurrentUser(next http.HandlerFunc) http.HandlerFunc {
 				http.Error(w, fmt.Sprint("User with username", claim.Username, "doesn't exist !"), http.StatusUnauthorized)
 				return
 			}
-			ctx = context.WithValue(ctx, Claim, claim)
+			ctx = context.WithValue(ctx, claimKey, claim)
 		}
 
-		ctx = context.WithValue(ctx, CurrentUser, u)
+		ctx = context.WithValue(ctx, currentUserKey, u)
 
 		r = r.WithContext(ctx)
 		next(w, r)
