@@ -86,29 +86,6 @@ func (h *Handler) ArticlesHandler(w http.ResponseWriter, r *http.Request) {
 	router.ServeHTTP(w, r)
 }
 
-func (h *Handler) getCurrentUser(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var err error
-		var u = &models.User{}
-		ctx := r.Context()
-
-		if claim, _ := h.JWT.CheckRequest(r); claim != nil {
-			// Check also that user exists and prevent old token usage
-			// to gain privillege access.
-			if u, err = h.DB.FindUserByUsername(claim.Username); err != nil {
-				http.Error(w, fmt.Sprint("User with username", claim.Username, "doesn't exist !"), http.StatusUnauthorized)
-				return
-			}
-			ctx = context.WithValue(ctx, Claim, claim)
-		}
-
-		ctx = context.WithValue(ctx, CurrentUser, u)
-
-		r = r.WithContext(ctx)
-		next(w, r)
-	}
-}
-
 func (h *Handler) extractArticle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -127,20 +104,6 @@ func (h *Handler) extractArticle(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 		next.ServeHTTP(w, r)
-	}
-}
-
-func (h *Handler) authorize(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if claim := r.Context().Value(Claim); claim != nil {
-			if currentUser := r.Context().Value(CurrentUser).(*models.User); (currentUser == &models.User{}) {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			} else {
-				next.ServeHTTP(w, r)
-			}
-		} else {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		}
 	}
 }
 
