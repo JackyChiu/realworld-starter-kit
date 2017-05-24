@@ -192,8 +192,8 @@ func (h *Handler) createArticle(w http.ResponseWriter, r *http.Request) {
 	if valid, errs := a.IsValid(); !valid {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		errorResponse := errorResponse{Errors: errs}
-		json.NewEncoder(w).Encode(errorResponse)
+		errorJSON := errorJSON{errs}
+		json.NewEncoder(w).Encode(errorJSON)
 		return
 	}
 
@@ -261,8 +261,8 @@ func (h *Handler) updateArticle(w http.ResponseWriter, r *http.Request) {
 	if valid, errs := a.IsValid(); !valid {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		errorResponse := errorResponse{Errors: errs}
-		json.NewEncoder(w).Encode(errorResponse)
+		errorJSON := errorJSON{errs}
+		json.NewEncoder(w).Encode(errorJSON)
 		return
 	}
 

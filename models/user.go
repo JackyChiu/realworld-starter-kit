@@ -32,9 +32,19 @@ func EncryptPassword(password string) string {
 	return string(hash)
 }
 
-func NewUser(email, username, password string) (*User, error) {
-	if email == "" || username == "" || password == "" {
-		return nil, fmt.Errorf("Provided with empty fields")
+func NewUser(email, username, password string) (*User, ValidationErrors) {
+	errs := ValidationErrors{}
+	if email == "" {
+		errs["email"] = []string{EMPTY_MSG}
+	}
+	if username == "" {
+		errs["username"] = []string{EMPTY_MSG}
+	}
+	if password == "" {
+		errs["password"] = []string{EMPTY_MSG}
+	}
+	if errs != nil {
+		return nil, errs
 	}
 	return &User{
 		Email:    email,

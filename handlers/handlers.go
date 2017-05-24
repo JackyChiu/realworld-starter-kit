@@ -15,8 +15,8 @@ type Handler struct {
 	Logger *log.Logger
 }
 
-type errorResponse struct {
-	Errors map[string]interface{} `json:"errors"`
+type errorJSON struct {
+	Errors models.ValidationErrors `json:"errors"`
 }
 
 func New(db *models.DB, jwt *auth.JWT, logger *log.Logger) *Handler {

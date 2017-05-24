@@ -50,8 +50,6 @@ type Article struct {
 	UpdatedAt      time.Time
 }
 
-type ValidationMessages map[string]interface{}
-
 var (
 	errorArticleAlreadyFavorited = errors.New("This article is already in your favorites !")
 	errorArticleNotFavorited     = errors.New("Cannot remove this article from your favorites. This article is not in your favorites !")
@@ -73,22 +71,22 @@ func NewArticle(title string, description string, body string, user *User) *Arti
 }
 
 // IsValid check if the article has a valid title, description and body
-func (a *Article) IsValid() (bool, map[string]interface{}) {
-	var errs = ValidationMessages{}
+func (a *Article) IsValid() (bool, ValidationErrors) {
+	var errs = ValidationErrors{}
 	var valid = true
 
 	if a.Title == "" {
-		errs["title"] = []string{"title field can't be blank"}
+		errs["title"] = []string{EMPTY_MSG}
 		valid = false
 	}
 
 	if a.Description == "" {
-		errs["description"] = []string{"description field can't be blank"}
+		errs["description"] = []string{EMPTY_MSG}
 		valid = false
 	}
 
 	if a.Body == "" {
-		errs["body"] = []string{"body field can't be blank"}
+		errs["body"] = []string{EMPTY_MSG}
 		valid = false
 	}
 

@@ -256,7 +256,7 @@ func TestArticlesHandler_CreateWithEmptyTitle(t *testing.T) {
 		t.Errorf("should return a 422 status code: got %v want %v", Code, http.StatusUnprocessableEntity)
 	}
 
-	var errorResponse errorResponse
+	var errorResponse errorJSON
 	json.NewDecoder(recorder.Body).Decode(&errorResponse)
 
 	if _, present := errorResponse.Errors["title"]; !present {
@@ -288,7 +288,7 @@ func TestArticlesHandler_CreateWithEmptyDescription(t *testing.T) {
 		t.Errorf("should return a 422 status code: got %v want %v", Code, http.StatusUnprocessableEntity)
 	}
 
-	var errorResponse errorResponse
+	var errorResponse errorJSON
 	json.NewDecoder(recorder.Body).Decode(&errorResponse)
 
 	if _, present := errorResponse.Errors["description"]; !present {
@@ -320,7 +320,7 @@ func TestArticlesHandler_CreateWithEmptyBody(t *testing.T) {
 		t.Errorf("should return a 422 status code: got %v want %v", Code, http.StatusUnprocessableEntity)
 	}
 
-	var errorResponse errorResponse
+	var errorResponse errorJSON
 	json.NewDecoder(recorder.Body).Decode(&errorResponse)
 
 	if _, present := errorResponse.Errors["body"]; !present {

@@ -90,10 +90,10 @@ func (h *Handler) registerUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	u, err := models.NewUser(bodyUser.Email, bodyUser.Username, bodyUser.Password)
-	if err != nil {
-		// TODO: Error JSON
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	u, errs := models.NewUser(bodyUser.Email, bodyUser.Username, bodyUser.Password)
+	if errs != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		json.NewEncoder(w).Encode(&errorJSON{errs})
 		return
 	}
 

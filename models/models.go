@@ -20,7 +20,6 @@ func NewDB(dialect, dbName string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return &DB{db}, nil
 }
 
@@ -29,5 +28,11 @@ func (db *DB) InitSchema() {
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Article{})
 	db.AutoMigrate(&Tag{})
-
 }
+
+type ValidationErrors map[string][]string
+
+const (
+	EMPTY_MSG string = "Value can't be empty"
+	TAKEN_MSG string = "Value entered is taken"
+)
